@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Deneme Sonucunu Düzenle</h2>
+    <form method="POST" onsubmit="return calculateNet()">
+        {{ form.hidden_tag() }}
+        <div class="row">
+            <!-- Sol Panel -->
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <i class="bi bi-calendar-event"></i> Temel Bilgiler
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            {{ form.tarih.label(class="form-label") }}
+                            {{ form.tarih(class="form-control") }}
+                            {% for error in form.tarih.errors %}
+                                <div class="alert alert-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.deneme_adi.label(class="form-label") }}
+                            {{ form.deneme_adi(class="form-control") }}
+                            {% for error in form.deneme_adi.errors %}
+                                <div class="alert alert-danger">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sağ Panel -->
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <i class="bi bi-pencil-square"></i> Sonuç Girişi
+                    </div>
+                    <div class="card-body">
+                        {% for subject in ['matematik', 'fen', 'turkce', 'sosyal', 'ingilizce', 'din'] %}
+                        <div class="mb-3 row">
+                            <div class="col-md-4">
+                                {{ form['dogru_' + subject].label(class="form-label") }}
+                                {{ form['dogru_' + subject](class="form-control", oninput="calculateNet()") }}
+                                {% for error in form['dogru_' + subject].errors %}
+                                    <div class="alert alert-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form['yanlis_' + subject].label(class="form-label") }}
+                                {{ form['yanlis_' + subject](class="form-control", oninput="calculateNet()") }}
+                                {% for error in form['yanlis_' + subject].errors %}
+                                    <div class="alert alert-danger">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">{{ subject|capitalize }} Net</label>
+                                <input type="text" id="{{ subject }}_net" class="form-control" readonly>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+    </form>
+</div>
+
+<script>
+function calculateNet() {
+    // Matematik
+    const dogruMatematik = parseInt(document.getElementById("{{ form.dogru_matematik.id }}").value) || 0;
+    const yanlisMatematik = parseInt(document.getElementById("{{ form.yanlis_matematik.id }}").value) || 0;
+    const matematikNet = dogruMatematik - (yanlisMatematik / 3);
+    document.getElementById("matematik_net").value = matematikNet.toFixed(2);
+
+    // Fen
+    const dogruFen = parseInt(document.getElementById("{{ form.dogru_fen.id }}").value) || 0;
+    const yanlisFen = parseInt(document.getElementById("{{ form.yanlis_fen.id }}").value) || 0;
+    const fenNet = dogruFen - (yanlisFen / 3);
+    document.getElementById("fen_net").value = fenNet.toFixed(2);
+
+    // Türkçe
+    const dogruTurkce = parseInt(document.getElementById("{{ form.dogru_turkce.id }}").value) || 0;
+    const yanlisTurkce = parseInt(document.getElementById("{{ form.yanlis_turkce.id }}").value) || 0;
+    const turkceNet = dogruTurkce - (yanlisTurkce / 3);
+    document.getElementById("turkce_net").value = turkceNet.toFixed(2);
+
+    // Sosyal
+    const dogruSosyal = parseInt(document.getElementById("{{ form.dogru_sosyal.id }}").value) || 0;
+    const yanlisSosyal = parseInt(document.getElementById("{{ form.yanlis_sosyal.id }}").value) || 0;
+    const sosyalNet = dogruSosyal - (yanlisSosyal / 3);
+    document.getElementById("sosyal_net").value = sosyalNet.toFixed(2);
+
+    // İngilizce
+    const dogruIngilizce = parseInt(document.getElementById("{{ form.dogru_ingilizce.id }}").value) || 0;
+    const yanlisIngilizce = parseInt(document.getElementById("{{ form.yanlis_ingilizce.id }}").value) || 0;
+    const ingilizceNet = dogruIngilizce - (yanlisIngilizce / 3);
+    document.getElementById("ingilizce_net").value = ingilizceNet.toFixed(2);
+
+    // Din
+    const dogruDin = parseInt(document.getElementById("{{ form.dogru_din.id }}").value) || 0;
+    const yanlisDin = parseInt(document.getElementById("{{ form.yanlis_din.id }}").value) || 0;
+    const dinNet = dogruDin - (yanlisDin / 3);
+    document.getElementById("din_net").value = dinNet.toFixed(2);
+}
+
+// Sayfa yüklendiğinde netleri hesapla
+document.addEventListener("DOMContentLoaded", function() {
+    calculateNet(); // Sayfa yüklendiğinde netleri hesapla
+});
+</script>
+{% endblock %}

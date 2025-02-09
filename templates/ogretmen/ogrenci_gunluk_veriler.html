@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block baslik %}{{ ogrenci.kullanici_adi }} - Günlük Çalışma Verileri{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>{{ ogrenci.kullanici_adi }} - Günlük Çalışma Verileri</h1>
+    <a href="{{ url_for('ogretmen.ogrenci_dashboard', ogrenci_id=ogrenci.id) }}" class="btn btn-secondary">Geri Dön</a>
+
+    <!-- Kayıtlı Veriler Tablosu -->
+    {% if gunluk_verileri %}
+    <div class="mt-5">
+        <h2 class="text-center">Kayıtlı Verileriniz</h2>
+        <div class="table-responsive" id="veri_tablosu">
+            <table class="table table-bordered table-hover">
+                <thead class="table-secondary text-center">
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Namaz</th>
+                        <th>Kuran</th>
+                        <th>Matematik</th>
+                        <th>Fen</th>
+                        <th>Türkçe</th>
+                        <th>Sosyal</th>
+                        <th>İngilizce</th>
+                        <th>Din</th>
+                        <th>Kitap Okuma</th>
+                        <th>Ders Toplamı</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for veri in gunluk_verileri %}
+                    <tr>
+                        <td>{{ veri.tarih }}</td>
+                        <td>{{ veri.namaz }}</td>
+                        <td>{{ veri.kuran }}</td>
+                        <td>{{ veri.matematik }}</td>
+                        <td>{{ veri.fen }}</td>
+                        <td>{{ veri.turkce }}</td>
+                        <td>{{ veri.sosyal }}</td>
+                        <td>{{ veri.ingilizce }}</td>
+                        <td>{{ veri.din }}</td>
+                        <td>{{ veri.kitap_okuma }}</td>
+                        <td>
+                            {{ veri.matematik + veri.fen + veri.turkce + veri.sosyal + veri.ingilizce + veri.din }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-info">
+                        <th>Toplam</th>
+                        <th>{{ toplamlar.namaz }}</th>
+                        <th>{{ toplamlar.kuran }}</th>
+                        <th>{{ toplamlar.matematik }}</th>
+                        <th>{{ toplamlar.fen }}</th>
+                        <th>{{ toplamlar.turkce }}</th>
+                        <th>{{ toplamlar.sosyal }}</th>
+                        <th>{{ toplamlar.ingilizce }}</th>
+                        <th>{{ toplamlar.din }}</th>
+                        <th>{{ toplamlar.kitap_okuma }}</th>
+                        <th>
+                            {{ toplamlar.matematik + toplamlar.fen + toplamlar.turkce + toplamlar.sosyal + toplamlar.ingilizce + toplamlar.din }}
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="text-center mt-4">
+            <button id="download_pdf" class="btn btn-secondary">PDF Olarak İndir</button>
+        </div>
+    </div>
+    {% else %}
+    <p class="text-center mt-4 text-muted">Henüz kayıtlı bir veri yok.</p>
+    {% endif %}
+</div>
+
+<!-- jsPDF ve html2canvas Kütüphaneleri -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("download_pdf").addEventListener("click", function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF("landscape");
+
+            // Kayıtlı veriler tablosunun ekran görüntüsünü al
+            html2canvas(document.querySelector("#veri_tablosu")).then(canvas => {
+                let imgData = canvas.toDataURL("image/png");
+                doc.addImage(imgData, "PNG", 10, 10, 280, 0); // Tabloyu PDF'e ekle
+                doc.save("gunluk_veriler.pdf"); // PDF'i kaydet
+            });
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ ogretmen.kullanici_adi }} - Atanmış Öğrenciler</h1>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Kullanıcı Adı</th>            
+        </tr>
+    </thead>
+    <tbody>
+        {% for ogrenci in ogrenciler %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ ogrenci.kullanici_adi }}</td>            
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if ogrenciler|length == 0 %}
+<p>Bu öğretmene atanmış öğrenci bulunmamaktadır.</p>
+{% endif %}
+{% endblock %}

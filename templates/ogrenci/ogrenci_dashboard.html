@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block baslik %}Öğrenci Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Öğrenci Denetim İstasyonu</h1>    
+    {% if current_user.rol == "ogrenci" %}
+        <p>Hoşgeldiniz, {{ current_user.kullanici_adi }}!</p>
+    {% elif current_user.rol == "ogretmen" %}
+        <p>Öğrenci: <strong>{{ ogrenci.kullanici_adi }}</strong></p>
+    {% endif %}
+
+    <ul>
+        {% if current_user.rol == "ogrenci" %}
+            <li><a href="{{ url_for('ogrenci.gunluk_veri_ekle') }}">Günlük Soru Sayılarım</a></li>
+            <li><a href="{{ url_for('ogrenci.deneme_sonucu_ekle') }}">Deneme Verilerim</a></li>
+            <li><a href="{{ url_for('ogrenci.profil') }}">Profilim</a></li>
+        {% elif current_user.rol == "ogretmen" %}
+            <li><a href="{{ url_for('ogretmen.ogrenci_gunluk_veriler', ogrenci_id=ogrenci.id) }}">Öğrencinin Günlük Çalışmaları</a></li>
+            <li><a href="{{ url_for('ogretmen.ogrenci_deneme_verileri', ogrenci_id=ogrenci.id) }}">Öğrencinin Deneme Verileri</a></li>
+        {% endif %}
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Öğrenci Listesi</h1>
+
+    {% if ogrenciler %}
+        <table class="table table-hover table-bordered">
+            <thead class="table-secondary">
+                <tr>
+                    <th>#</th>
+                    <th>Sınıf</th>
+                    <th>Okul No</th>
+                    <th>Öğrenci Adı</th>
+                    <th>Atanan Öğretmen</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ogrenci in ogrenciler %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ ogrenci.sinif if ogrenci.sinif else 'Belirtilmemiş' }}</td>
+                    <td>{{ ogrenci.okul_no if ogrenci.okul_no else 'Belirtilmemiş' }}</td>
+                    <td>
+                        <a href="{{ url_for('ogretmen.ogrenci_dashboard', ogrenci_id=ogrenci.id) }}" class="fw-bold text-primary">
+                            {{ ogrenci.kullanici_adi }}
+                        </a>
+                    </td>
+                    <td>
+                        {{ ogrenci.ogretmen.kullanici_adi if ogrenci.ogretmen else 'Öğretmen Atanmamış' }}
+                    </td>
+                    <td>
+                        <form method="post" action="{{ url_for('ogretmen.ogrenci_sil', ogrenci_id=ogrenci.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bu öğrenciyi silmek istediğinize emin misiniz?')">
+                                Sil
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-muted">Henüz sisteme kayıtlı öğrenci bulunmamaktadır.</p>
+    {% endif %}
+</div>
+{% endblock %}

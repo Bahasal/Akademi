@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Öğrenci Atama</h1>
+<form method="post" action="{{ url_for('rehber.atama') }}">
+    <label for="ogrenci_id">Öğrenci:</label>
+    <select id="ogrenci_id" name="ogrenci_id">
+        {% for ogrenci in tum_ogrenciler %}
+        <option value="{{ ogrenci.id }}">{{ ogrenci.kullanici_adi }}</option>
+        {% endfor %}
+    </select>
+    
+    <label for="ogretmen_id">Danışman Öğretmen:</label>
+    <select id="ogretmen_id" name="ogretmen_id">
+        {% for ogretmen in ogretmenler %}
+        <option value="{{ ogretmen.id }}">{{ ogretmen.kullanici_adi }}</option>
+        {% endfor %}
+    </select>
+    
+    <button type="submit">Atama Yap</button>
+</form>
+{% endblock %}

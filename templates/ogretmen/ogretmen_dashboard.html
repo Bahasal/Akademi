@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block baslik %}Öğretmen Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <h1 class="display-5">Öğretmen Denetim İstasyonu</h1>
+        <p class="lead">Hoş geldiniz, <strong>{{ current_user.kullanici_adi }}</strong>!</p>
+    </div>
+    <div class="row justify-content-center">
+        <!-- Öğrenci Listesi -->
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Öğrenci Listesi</h5>
+                    <p class="card-text">Kurumunuza bağlı öğrencilere göz atın ve detaylara erişin.</p>
+                    <a href="{{ url_for('ogretmen.ogrenci_listesi') }}" class="btn btn-primary btn-sm">
+                        Görüntüle
+                    </a>
+                </div>
+            </div>
+        </div>
+        <!-- Profilim -->
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Profilim</h5>
+                    <p class="card-text">Kişisel bilgilerinizi görüntüleyin ve düzenleyin.</p>
+                    <a href="{{ url_for('ogretmen.profil') }}" class="btn btn-success btn-sm">
+                        Düzenle
+                    </a>
+                </div>
+            </div>        
+    </div>
+</div>
+{% endblock %}

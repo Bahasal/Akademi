@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block baslik %}Günlük Veri Ekle{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Günlük Verilerinizi Ekleyin</h1>
+
+    <form method="post" action="{{ url_for('ogrenci.gunluk_veri_ekle') }}">
+        <div class="mb-3">
+            <label for="tarih" class="form-label">Tarih Seç (Son 3 gün içinde)</label>
+            <input type="date" id="tarih" name="tarih" class="form-control" max="{{ bugun }}" required>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-primary text-center">
+                    <tr>
+                        <th>Aktivite / Ders</th>
+                        <th>Sayfa Sayısı / Soru Sayısı / Kılınan Vakit Sayısı</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for alan in ["namaz", "kuran", "matematik", "fen", "turkce", "sosyal", "ingilizce", "din", "kitap_okuma"] %}
+                    <tr>
+                        <td>{{ alan.replace("_", " ").title() }}</td>
+                        <td><input type="number" name="{{ alan }}" class="form-control" min="0" placeholder="Değer Gir"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-success px-5">Kaydet</button>
+        </div>
+    </form>
+
+    {% if veriler %}
+    <div class="mt-5">
+        <h2 class="text-center">Kayıtlı Verileriniz</h2>
+        <table class="table table-bordered table-hover">
+            <thead class="table-secondary text-center">
+                <tr>
+                    <th>Tarih</th>
+                    <th>Namaz</th>
+                    <th>Kuran</th>
+                    <th>Matematik</th>
+                    <th>Fen</th>
+                    <th>Türkçe</th>
+                    <th>Sosyal</th>
+                    <th>İngilizce</th>
+                    <th>Din</th>
+                    <th>Kitap Okuma</th>
+                    <th>Toplam</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for veri in veriler %}
+                <tr>
+                    <td>{{ veri.tarih }}</td>
+                    <td>{{ veri.namaz }}</td>
+                    <td>{{ veri.kuran }}</td>
+                    <td>{{ veri.matematik }}</td>
+                    <td>{{ veri.fen }}</td>
+                    <td>{{ veri.turkce }}</td>
+                    <td>{{ veri.sosyal }}</td>
+                    <td>{{ veri.ingilizce }}</td>
+                    <td>{{ veri.din }}</td>
+                    <td>{{ veri.kitap_okuma }}</td>
+                    <td>{{ veri.matematik + veri.fen + veri.turkce + veri.sosyal + veri.ingilizce + veri.din }}</td>
+                    <td>
+                        {% if (bugun - veri.tarih).days <= 3 %}
+                        <a href="{{ url_for('ogrenci.gunluk_veri_ekle') }}" class="btn btn-warning btn-sm">Güncelle</a>
+                        {% else %}
+                        <span class="text-muted">Süre Doldu</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

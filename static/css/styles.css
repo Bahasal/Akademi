@@ -1,0 +1,140 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background: #f4f9f4; /* Açık askeri yeşil tonlu arka plan */
+    color: #2e2e1f; /* Daha yumuşak koyu yeşil yazı rengi */
+}
+
+h1 {
+    text-align: center;
+    margin: 20px 0;
+    color: #3c5c3c; /* Açık yeşil başlık rengi */
+}
+
+.navbar {
+    background-color: #d9eefa !important; /* Açık toz mavi renk */
+    color: #2e2e2e; /* Navbar genel yazı rengi */
+}
+
+.navbar .navbar-brand {
+    color: #2e2e2e !important; /* Akademik Takip Sistemi yazısını koyulaştır */
+    font-weight: bold;
+}
+
+.navbar .navbar-brand:hover {
+    color: #1a496a !important; /* Hover sırasında daha koyu mavi ton */
+}
+
+.navbar a.nav-link {
+    color: #2e2e2e !important; /* Link yazı rengi koyu gri */
+}
+
+.navbar a.nav-link:hover {
+    color: #1a496a !important; /* Link hover sırasında koyu mavi ton */
+    text-decoration: underline;
+}
+
+textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #c7d7c7;
+    border-radius: 5px;
+    background: #eef7ee; /* Açık yeşil girdi alanı */
+    color: #2e2e1f;
+}
+
+button {
+    padding: 10px 20px;
+    background: #c7e0c7; /* Açık yeşil düğme rengi */
+    color: #2e2e1f;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #b5d1b5; /* Biraz daha koyu yeşil hover efekti */
+}
+
+/* Genel Tablo Stili */
+.deneme-table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    text-align: center;
+    background-color: #eef7ee; /* Tablo arka planı açık yeşil */
+    color: #2e2e1f; /* Yazılar koyu yeşil */
+}
+
+.deneme-table thead th {
+    text-align: center;
+    font-weight: bold;
+    background-color: #d9ecd9; /* Başlık için açık yeşil ton */
+    border: 1px solid #c7d7c7;
+}
+
+.deneme-table tbody td {
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #c7d7c7;
+}
+
+/* Girdi Grupları */
+.input-group {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 10px;
+}
+
+.input-group .form-control {
+    width: 30%; /* Doğru, Yanlış, Net alanlarının genişliği */
+    text-align: center;
+    background: #eef7ee;
+    color: #2e2e1f;
+    border: 1px solid #c7d7c7;
+    border-radius: 5px;
+}
+
+/* Sonuç Grupları */
+.result-group {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Butonlar */
+button.btn-primary {
+    margin-top: 20px;
+    display: block;
+    width: 150px;
+    margin-left: auto;
+    margin-right: auto;
+    background: #c7e0c7; /* Açık yeşil düğme rengi */
+    color: #2e2e1f;
+}
+
+button.btn-primary:hover {
+    background: #b5d1b5; /* Biraz daha koyu yeşil hover efekti */
+}
+
+/* Mobil Uyum */
+@media (max-width: 768px) {
+    .input-group .form-control,
+    .result-group span {
+        width: 100%;
+        text-align: center;
+    }
+
+    .input-group {
+        flex-direction: column;
+    }
+
+    .result-group {
+        flex-direction: column;
+    }
+}

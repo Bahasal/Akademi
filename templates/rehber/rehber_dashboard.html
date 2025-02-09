@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block baslik %}Rehber Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Rehber Denetim İstasyonu</h1>
+    <p>Hoşgeldiniz, {{ current_user.kullanici_adi }}!</p>
+    <ul>
+        <li><a href="{{ url_for('rehber.ogrenci_listesi') }}">Öğrenci Listesi</a></li>
+        <li><a href="{{ url_for('rehber.ogretmen_listesi') }}">Öğretmen Liste</a></li>
+        <li><a href="{{ url_for('rehber.atama') }}">Atama İşlemleri</a></li>
+        <li><a href="{{ url_for('rehber.profil') }}">Profilim</a></li>
+    </ul>
+</div>
+{% endblock %}

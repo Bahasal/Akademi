@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block baslik %}{{ ogrenci.kullanici_adi }} - Deneme Sonuçları{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>{{ ogrenci.kullanici_adi }} - Deneme Sonuçları</h1>
+    <a href="{{ url_for('ogretmen.ogrenci_dashboard', ogrenci_id=ogrenci.id) }}" class="btn btn-secondary">Geri Dön</a>
+
+    <br>
+    <button id="download_pdf" class="btn btn-secondary">PDF Olarak İndir</button>
+    
+    <h3 class="mt-5">Kayıtlı Deneme Sonuçları</h3>
+    <div id="sonuc_table">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Tarih</th>
+                    <th>Deneme No</th>
+                    <th>Matematik</th>
+                    <th>Fen</th>
+                    <th>Türkçe</th>
+                    <th>Sosyal</th>
+                    <th>İngilizce</th>
+                    <th>Din</th>
+                    <th>Toplam Net</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if deneme_verileri %}
+                    {% for sonuc in deneme_verileri %}
+                    <tr>
+                        <td>{{ sonuc.tarih }}</td>
+                        <td>{{ loop.index }}. deneme</td> <!-- Deneme numarası burada -->
+                        <td>
+                            <div>D: {{ sonuc.dogru_matematik }}</div>
+                            <div>Y: {{ sonuc.yanlis_matematik }}</div>
+                            <div>N: {{ sonuc.net_matematik|round(2) }}</div>
+                        </td>
+                        <td>
+                            <div>D: {{ sonuc.dogru_fen }}</div>
+                            <div>Y: {{ sonuc.yanlis_fen }}</div>
+                            <div>N: {{ sonuc.net_fen|round(2) }}</div>
+                        </td>
+                        <td>
+                            <div>D: {{ sonuc.dogru_turkce }}</div>
+                            <div>Y: {{ sonuc.yanlis_turkce }}</div>
+                            <div>N: {{ sonuc.net_turkce|round(2) }}</div>
+                        </td>
+                        <td>
+                            <div>D: {{ sonuc.dogru_sosyal }}</div>
+                            <div>Y: {{ sonuc.yanlis_sosyal }}</div>
+                            <div>N: {{ sonuc.net_sosyal|round(2) }}</div>
+                        </td>
+                        <td>
+                            <div>D: {{ sonuc.dogru_ingilizce }}</div>
+                            <div>Y: {{ sonuc.yanlis_ingilizce }}</div>
+                            <div>N: {{ sonuc.net_ingilizce|round(2) }}</div>
+                        </td>
+                        <td>
+                            <div>D: {{ sonuc.dogru_din }}</div>
+                            <div>Y: {{ sonuc.yanlis_din }}</div>
+                            <div>N: {{ sonuc.net_din|round(2) }}</div>
+                        </td>
+                        <td>{{ sonuc.toplam_net|round(2) }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr><td colspan="9">Veri yok.</td></tr>
+                {% endif %}
+            </tbody>            
+        </table>
+    </div>
+
+    <h3 class="mt-5">Net Değişim Grafikleri</h3>
+    <canvas id="toplamNetChart" style="height: 500px; width: 100%;"></canvas>
+
+    <div class="row mt-4">
+        {% for ders in ['Matematik', 'Fen', 'Türkçe', 'Sosyal', 'İngilizce', 'Din'] %}
+        <div class="col-md-4">
+            <canvas id="{{ ders|replace(' ', '_') }}_chart" style="height: 250px; width: 100%;"></canvas>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- jsPDF ve html2canvas Kütüphaneleri -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Grafik oluşturma fonksiyonu
+        function olusturGrafik(canvasId, labels, data, title, maxY) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Net Sayıları',
+                        data: data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: title
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: maxY,
+                            title: {
+                                display: true,
+                                text: 'Net Sayısı'
+                            },
+                            ticks: {
+                                stepSize: 5,
+                                callback: function(value) {
+                                    return value;
+                                },
+                                min: 0,
+                                max: 20
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Deneme'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Grafik oluşturma
+        const dersler = ['Matematik', 'Fen', 'Türkçe', 'Sosyal', 'İngilizce', 'Din'];
+        const netSayilari = [
+            [{% for sonuc in deneme_verileri %}{{ sonuc.net_matematik|round(2) }}{% if not loop.last %}, {% endif %}{% endfor %}],
+            [{% for sonuc in deneme_verileri %}{{ sonuc.net_fen|round(2) }}{% if not loop.last %}, {% endif %}{% endfor %}],
+            [{% for sonuc in deneme_verileri %}{{ sonuc.net_turkce|round(2) }}{% if not loop.last %}, {% endif %}{% endfor %}],
+            [{% for sonuc in deneme_verileri %}{{ sonuc.net_sosyal|round(2) }}{% if not loop.last %}, {% endif %}{% endfor %}],
+            [{% for sonuc in deneme_verileri %}{{ sonuc.net_ingilizce|round(2) }}{% if not loop.last %}, {% endif %}{% endfor %}],
+            [{% for sonuc in deneme_verileri %}{{ sonuc.net_din|round(2) }}{% if not loop.last %}, {% endif %}{% endfor %}]
+        ];
+
+        // Her ders için grafik oluştur
+        dersler.forEach((ders, index) => {
+            olusturGrafik(ders.replace(' ', '_') + '_chart', Array.from({length: 40}, (_, i) => `Deneme ${i + 1}`), netSayilari[index], ders, 20);
+        });
+
+        // Toplam net grafiğini oluştur
+        olusturGrafik('toplamNetChart', Array.from({length: 40}, (_, i) => `Deneme ${i + 1}`), [{{ deneme_verileri|map(attribute='toplam_net')|join(', ') }}], 'Toplam Net Değişimi', Math.max(...[{{ deneme_verileri|map(attribute='toplam_net')|join(', ') }}]));
+
+        // PDF Alma İşlevi
+        document.getElementById("download_pdf").addEventListener("click", function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF("landscape");
+
+            // Sonuç tablosunun ekran görüntüsünü al
+            html2canvas(document.getElementById("sonuc_table")).then(canvas => {
+                let imgData = canvas.toDataURL("image/png");
+                doc.addImage(imgData, "PNG", 10, 10, 280, 0);
+                doc.addPage();
+
+                // Toplam net değişim grafiğinin ekran görüntüsünü al
+                html2canvas(document.getElementById("toplamNetChart")).then(chartCanvas => {
+                    let chartImgData = chartCanvas.toDataURL("image/png");
+                    doc.addImage(chartImgData, "PNG", 10, 10, 270, 0);
+                    doc.addPage(); 
+
+                    // Diğer grafiklerin ekran görüntülerini al
+                    let grafikCanvaslar = document.querySelectorAll("canvas");
+                    let grafikPromises = [];
+
+                    grafikCanvaslar.forEach((canvas, index) => {
+                        if (canvas.id !== "toplamNetChart") {
+                            grafikPromises.push(html2canvas(canvas).then(chartCanvas => {
+                                let chartImgData = chartCanvas.toDataURL("image/png");
+                                doc.addImage(chartImgData, "PNG", 10, 10, 130, 0);
+                                doc.addPage();
+                            }));
+                        }
+                    });
+
+                    // Tüm grafiklerin eklenmesini bekle
+                    Promise.all(grafikPromises).then(() => {
+                        doc.save("deneme_sonuclari.pdf");
+                    });
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

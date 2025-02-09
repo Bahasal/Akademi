@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Profil Bilgilerim</h1>
+<form method="post" action="{{ url_for('rehber.profil') }}">
+    <label for="kullanici_adi">Kullanıcı Adı:</label>
+    <input type="text" id="kullanici_adi" name="kullanici_adi" value="{{ rehber.kullanici_adi }}" required>
+    
+    <label for="sifre">Şifre:</label>
+    <input type="password" id="sifre" name="sifre" required>
+    
+    <button type="submit">Güncelle</button>
+</form>
+{% endblock %}

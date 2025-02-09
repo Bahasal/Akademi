@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Öğrenci Listesi</h1>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Sıra No</th>
+            <th>Sınıf</th>
+            <th>Okul Numarası</th>
+            <th>Öğrenci Adı</th>
+            <th>Atanan Öğretmen</th>            
+            <th>Sil</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ogrenci in ogrenciler %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ ogrenci.sinif if ogrenci.sinif else 'Belirtilmemiş' }}</td>
+            <td>{{ ogrenci.okul_no if ogrenci.okul_no else 'Belirtilmemiş' }}</td>
+            <td>{{ ogrenci.kullanici_adi }}</td>
+            <td>{{ ogrenci.ogretmen.kullanici_adi if ogrenci.ogretmen else 'Atanmış öğretmen yok.' }}</td>            
+            <td>
+                <form method="post" action="{{ url_for('rehber.ogrenci_sil', ogrenci_id=ogrenci.id) }}">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Bu öğrenciyi silmek istediğinize emin misiniz?')">Sil</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if ogrenciler|length == 0 %}
+<p>Henüz sisteme kayıtlı öğrenci bulunmamaktadır.</p>
+{% endif %}
+{% endblock %}

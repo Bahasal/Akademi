@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Öğretmen Listesi</h1>
+
+<!-- Eğer rehber kendisini seçen öğretmenlere bakıyorsa, bu kontrolü ekleyelim -->
+{% if ogretmenler %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Kullanıcı Adı</th>
+                <th>Atanmış Öğrenciler</th>             
+                <th>Sil</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ogretmen in ogretmenler %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ ogretmen.kullanici_adi }}</td>
+                <td>
+                    <a href="{{ url_for('rehber.ogretmen_ogrenciler', ogretmen_id=ogretmen.id) }}" class="btn btn-primary">
+                        Atanmış Öğrenciler
+                    </a>
+                </td>                
+                <td>
+                    <a href="{{ url_for('rehber.ogretmen_sil', ogretmen_id=ogretmen.id) }}" class="btn btn-danger" onclick="return confirm('Bu öğretmeni silmek istediğinize emin misiniz?');">
+                        Sil
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Henüz sisteme kayıtlı öğretmen bulunmamaktadır.</p>
+{% endif %}
+
+{% endblock %}

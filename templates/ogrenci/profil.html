@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Profil Bilgilerim</h1>   
+
+    <!-- Kullanıcı Adı ve Şifre Güncelleme Formu -->
+    <form action="{{ url_for('ogrenci.profil_guncelle') }}" method="POST">
+        <div class="mb-3">
+            <label for="username" class="form-label">Kullanıcı Adı</label>
+            <input type="text" class="form-control" id="username" name="username" value="{{ current_user.username }}" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-label">Yeni Şifre</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="confirm_password" class="form-label">Şifre Tekrar</label>
+            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Güncelle</button>
+    </form>
+</div>
+{% endblock %}

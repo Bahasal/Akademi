@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Deneme Sonuçları</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Ders</th>
+                    <th>D</th>
+                    <th>Y</th>
+                    <th>N</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ders, dogru_field, yanlis_field in [
+                    ('Matematik', form.dogru_matematik, form.yanlis_matematik),
+                    ('Fen', form.dogru_fen, form.yanlis_fen),
+                    ('Türkçe', form.dogru_turkce, form.yanlis_turkce),
+                    ('Sosyal', form.dogru_sosyal, form.yanlis_sosyal),
+                    ('İngilizce', form.dogru_ingilizce, form.yanlis_ingilizce),
+                    ('Din', form.dogru_din, form.yanlis_din)
+                ] %}
+                <tr>
+                    <td>{{ ders }}</td>
+                    <td>{{ dogru_field() }}</td>
+                    <td>{{ yanlis_field() }}</td>
+                    <td><span class="net_sonuc">0.00</span></td> 
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+
+    <br>
+    <button id="download_pdf" class="btn btn-secondary">PDF Olarak İndir</button>
+    
+    <h3 class="mt-5">Kayıtlı Deneme Sonuçları</h3>
+    <div id="sonuc_table">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Tarih</th>
+                    <th>Deneme No</th>
+                    <th>Matematik</th>
+                    <th>Fen</th>
+                    <th>Türkçe</th>
+                    <th>Sosyal</th>
+                    <th>İngilizce</th>
+                    <th>Din</th>
+                    <th>Toplam Net</th>
+                    <th>İşlemler</th> <!-- Yeni sütun eklendi -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for sonuc in mevcut_sonuclar|sort(attribute='tarih') %}
+                <tr>
+                    <td>{{ sonuc.tarih }}</td>
+                    <td>{{ loop.index }}. Deneme</td>
+                    <td>
+                        <div>D: {{ sonuc.dogru_matematik }}</div>
+                        <div>Y: {{ sonuc.yanlis_matematik }}</div>
+                        <div>N: {{ sonuc.net_matematik|round(2) }}</div>
+                    </td>
+                    <td>
+                        <div>D: {{ sonuc.dogru_fen }}</div>
+                        <div>Y: {{ sonuc.yanlis_fen }}</div>
+                        <div>N: {{ sonuc.net_fen|round(2) }}</div>
+                    </td>
+                    <td>
+                        <div>D: {{ sonuc.dogru_turkce }}</div>
+                        <div>Y: {{ sonuc.yanlis_turkce }}</div>
+                        <div>N: {{ sonuc.net_turkce|round(2) }}</div>
+                    </td>
+                    <td>
+                        <div>D: {{ sonuc.dogru_sosyal }}</div>
+                        <div>Y: {{ sonuc.yanlis_sosyal }}</div>
+                        <div>N: {{ sonuc.net_sosyal|round(2) }}</div>
+                    </td>
+                    <td>
+                        <div>D: {{ sonuc.dogru_ingilizce }}</div>
+                        <div>Y: {{ sonuc.yanlis_ingilizce }}</div>
+                        <div>N: {{ sonuc.net_ingilizce|round(2) }}</div>
+                    </td>
+                    <td>
+                        <div>D: {{ sonuc.dogru_din }}</div>
+                        <div>Y: {{ sonuc.yanlis_din }}</div>
+                        <div>N: {{ sonuc.net_din|round(2) }}</div>
+                    </td>
+                    <td>{{ sonuc.toplam_net|round(2) }}</td>
+                    <td>
+                        <form action="{{ url_for('ogrenci.deneme_sonucu_guncelle', sonuc_id=sonuc.id) }}" method="GET">
+                            <button type="submit" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil-square"></i> Düzenle
+                            </button>
+                        </form>
+                        <form action="{{ url_for('ogrenci.deneme_sonucu_sil', sonuc_id=sonuc.id) }}" method="POST" 
+                              class="mt-2" 
+                              onsubmit="return confirm('Bu kaydı silmek istediğinize emin misiniz?');">
+                            <button type="submit" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> Sil
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            
+        </table>
+    </div>
+
+    <h3 class="mt-5">Net Değişim Grafikleri</h3>
+    <canvas id="toplamNetChart" style="height: 500px; width: 100%;"></canvas>
+
+    <div class="row mt-4">
+        {% for ders in ['Matematik', 'Fen', 'Türkçe', 'Sosyal', 'İngilizce', 'Din'] %}
+        <div class="col-md-4">
+            <canvas id="{{ ders|replace(' ', '_') }}_chart" style="height: 250px; width: 100%;"></canvas>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- jsPDF ve html2canvas Kütüphaneleri -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        function hesaplaNet() {
+            let toplamNet = 0;
+
+            // Her ders için doğru ve yanlış sayısını alarak net hesapla
+            document.querySelectorAll("tbody tr").forEach(row => {
+                let dogruInput = row.children[1].querySelector("input");
+                let yanlisInput = row.children[2].querySelector("input");
+
+                let dogru = parseInt(dogruInput.value) || 0;
+                let yanlis = parseInt(yanlisInput.value) || 0;
+
+                let net = dogru - (yanlis / 3);
+                row.children[3].querySelector(".net_sonuc").textContent = net.toFixed(2);
+
+                toplamNet += net; // Toplam neti güncelle
+            });
+
+            // Toplam neti güncelle
+            document.getElementById("toplam_net").textContent = toplamNet.toFixed(2);
+        }
+
+        // Input'lara event listener ekle
+        document.querySelectorAll("input").forEach(input => {
+            input.addEventListener("input", hesaplaNet);
+        });
+
+        // Grafik oluşturma fonksiyonu
+        function olusturGrafik(canvasId, labels, data, title, maxY) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Net Sayıları',
+                        data: data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: title
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: maxY, // Y ekseninin maksimum değeri
+                            title: {
+                                display: true,
+                                text: 'Net Sayısı'
+                            },
+                            ticks: {
+                                stepSize: 5, // Y eksenindeki adım boyutu
+                                callback: function(value) {
+                                    return value; // Tüm değerleri göster
+                                },
+                                min: 0, // Minimum değer
+                                max: maxY // Maksimum değer
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Deneme'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Grafik oluşturma
+        const dersler = ['Matematik', 'Fen', 'Türkçe', 'Sosyal', 'İngilizce', 'Din'];
+        const netSayilari = [
+            [{% for sonuc in mevcut_sonuclar %}{{ sonuc.net_matematik|round(2) }}{% if not loop.last %}, {% endif %}{% endfor %}],
+            [{% for sonuc in mevcut_sonuclar %}{{ sonuc.net_fen|round(2) }}{% if not loop.last %}, {% endif %}{% endfor %}],
+            [{% for sonuc in mevcut_sonuclar %}{{ sonuc.net_turkce|round(2) }}{% if not loop.last %}, {% endif %}{% endfor %}],
+            [{% for sonuc in mevcut_sonuclar %}{{ sonuc.net_sosyal|round(2) }}{% if not loop.last %}, {% endif %}{% endfor %}],
+            [{% for sonuc in mevcut_sonuclar %}{{ sonuc.net_ingilizce|round(2) }}{% if not loop.last %}, {% endif %}{% endfor %}],
+            [{% for sonuc in mevcut_sonuclar %}{{ sonuc.net_din|round(2) }}{% if not loop.last %}, {% endif %}{% endfor %}]
+        ];
+
+        // Her ders için grafik oluştur
+        dersler.forEach((ders, index) => {
+            olusturGrafik(ders.replace(' ', '_') + '_chart', Array.from({length: 40}, (_, i) => `Deneme ${i + 1}`), netSayilari[index], ders, 20);
+        });
+
+        // Toplam net grafiğini oluştur
+        olusturGrafik('toplamNetChart', Array.from({length: 40}, (_, i) => `Deneme ${i + 1}`), [{{ mevcut_sonuclar|map(attribute='toplam_net')|join(', ') }}], 'Toplam Net Değişimi', 90);
+        
+        // PDF Alma İşlevi
+        document.getElementById("download_pdf").addEventListener("click", function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF("landscape");
+
+            // Sonuç tablosunun ekran görüntüsünü al
+            html2canvas(document.getElementById("sonuc_table")).then(canvas => {
+                let imgData = canvas.toDataURL("image/png");
+                doc.addImage(imgData, "PNG", 10, 10, 280, 0);
+                doc.addPage();
+
+                // Toplam net değişim grafiğinin ekran görüntüsünü al
+                html2canvas(document.getElementById("toplamNetChart")).then(chartCanvas => {
+                    let chartImgData = chartCanvas.toDataURL("image/png");
+                    doc.addImage(chartImgData, "PNG", 10, 10, 270, 0); // Toplam net grafiği A4'e sığacak şekilde
+                    doc.addPage(); // Toplam net grafiğinden sonra yeni sayfa ekle
+
+                    // Diğer grafiklerin ekran görüntülerini al
+                    let grafikCanvaslar = document.querySelectorAll("canvas");
+                    let grafikPromises = [];
+
+                    grafikCanvaslar.forEach((canvas, index) => {
+                        if (canvas.id !== "toplamNetChart") { // Toplam net grafiğini atla
+                            grafikPromises.push(html2canvas(canvas).then(chartCanvas => {
+                                let chartImgData = chartCanvas.toDataURL("image/png");
+                                doc.addImage(chartImgData, "PNG", 10, 10, 130, 0);
+                                doc.addPage(); // Her grafik için yeni sayfa ekle
+                            }));
+                        }
+                    });
+
+                    // Tüm grafiklerin eklenmesini bekle
+                    Promise.all(grafikPromises).then(() => {
+                        doc.save("deneme_sonuclari.pdf");
+                    });
+                });
+            });
+        });
+
+        // Toplam neti başlangıçta hesapla
+        hesaplaNet();
+    });
+</script>
+
+
+{% endblock %}

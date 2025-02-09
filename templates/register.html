@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block baslik %}Kayıt Ol{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white text-center">
+                <h4>Kayıt Ol</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('register') }}">
+                    <!-- Kurum Kodu -->
+                    <div class="mb-3">
+                        <label for="kurumKodu" class="form-label">Kurum Kodu</label>
+                        <input type="text" name="kurum_kodu" class="form-control" id="kurumKodu" required>
+                    </div>
+
+                    <!-- Kullanıcı Adı -->
+                    <div class="mb-3">
+                        <label for="kullaniciAdi" class="form-label">Kullanıcı Adı</label>
+                        <input type="text" name="kullanici_adi" class="form-control" id="kullaniciAdi" required>
+                    </div>
+
+                    <!-- Şifre -->
+                    <div class="mb-3">
+                        <label for="sifre" class="form-label">Şifre</label>
+                        <input type="password" name="sifre" class="form-control" id="sifre" required>
+                    </div>
+
+                    <!-- Şifre (Tekrar) -->
+                    <div class="mb-3">
+                        <label for="sifreTekrar" class="form-label">Şifre (Tekrar)</label>
+                        <input type="password" name="sifre_tekrar" class="form-control" id="sifreTekrar" required>
+                    </div>
+
+                    <!-- Rol Seçimi -->
+                    <div class="mb-3">
+                        <label for="rolSecimi" class="form-label">Rolünüz</label>
+                        <select name="rol" class="form-select" id="rolSecimi" required>
+                            <option value="" disabled selected>Rol Seçiniz</option>
+                            <option value="ogrenci">Öğrenci</option>
+                            <option value="ogretmen">Öğretmen</option>
+                            <option value="rehber">Rehber</option>
+                        </select>
+                    </div>
+
+                    <!-- Öğrenciye Özel Alanlar -->
+                    <div id="ogrenciAlanlari" class="d-none">
+                        <!-- Rehber Seçimi -->
+                        <div class="mb-3">
+                            <label for="ogrenciRehber" class="form-label">Rehberiniz</label>
+                            <select name="rehber_id" class="form-select" id="ogrenciRehber">
+                                <option value="" disabled selected>Rehber Seçiniz</option>
+                                {% for rehber in rehberler %}
+                                <option value="{{ rehber.id }}">{{ rehber.kullanici_adi }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Sınıf ve Şube -->
+                        <div class="mb-3">
+                            <label for="sinifSube" class="form-label">Sınıf ve Şube</label>
+                            <input type="text" name="sinif" class="form-control" id="sinifSube" placeholder="Örn: 8A">
+                        </div>
+
+                        <!-- Okul Numarası -->
+                        <div class="mb-3">
+                            <label for="okulNo" class="form-label">Okul Numarası</label>
+                            <input type="text" name="okul_no" class="form-control" id="okulNo">
+                        </div>
+                    </div>
+
+                    <!-- Öğretmene Özel Alanlar -->
+                    <div id="ogretmenAlanlari" class="d-none">
+                        <!-- Rehber Seçimi -->
+                        <div class="mb-3">
+                            <label for="ogretmenRehber" class="form-label">Rehberiniz</label>
+                            <select name="rehber_id" class="form-select" id="ogretmenRehber">
+                                <option value="" disabled selected>Rehber Seçiniz</option>
+                                {% for rehber in rehberler %}
+                                <option value="{{ rehber.id }}">{{ rehber.kullanici_adi }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Kayıt Ol Butonu -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">Kayıt Ol</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <p>Zaten bir hesabınız var mı? <a href="{{ url_for('login') }}">Giriş Yap</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Dinamik Alanları Yönetmek İçin JavaScript
+    const rolSecimi = document.getElementById("rolSecimi");
+    const ogrenciAlanlari = document.getElementById("ogrenciAlanlari");
+    const ogretmenAlanlari = document.getElementById("ogretmenAlanlari");
+
+    rolSecimi.addEventListener("change", function () {
+        const rol = rolSecimi.value;
+
+        // Alanları sıfırla
+        ogrenciAlanlari.classList.add("d-none");
+        ogretmenAlanlari.classList.add("d-none");
+
+        // Role göre gösterilecek alan
+        if (rol === "ogrenci") {
+            ogrenciAlanlari.classList.remove("d-none");
+            // 'required' niteliğini ekle
+            document.getElementById("ogrenciRehber").required = true;
+            document.getElementById("sinifSube").required = true;
+            document.getElementById("okulNo").required = true;
+        } else {
+            // 'required' niteliğini kaldır
+            document.getElementById("ogrenciRehber").required = false;
+            document.getElementById("sinifSube").required = false;
+            document.getElementById("okulNo").required = false;
+        }
+
+        if (rol === "ogretmen") {
+            ogretmenAlanlari.classList.remove("d-none");
+            document.getElementById("ogretmenRehber").required = true;
+        } else {
+            document.getElementById("ogretmenRehber").required = false;
+        }
+    });
+
+    // Sayfa yüklendiğinde doğru rol alanlarının görünüp görünmediğini kontrol et
+    window.addEventListener("load", function() {
+        const rol = rolSecimi.value;
+        if (rol === "ogrenci") {
+            ogrenciAlanlari.classList.remove("d-none");
+            document.getElementById("ogrenciRehber").required = true;
+            document.getElementById("sinifSube").required = true;
+            document.getElementById("okulNo").required = true;
+        } else if (rol === "ogretmen") {
+            ogretmenAlanlari.classList.remove("d-none");
+            document.getElementById("ogretmenRehber").required = true;
+        }
+    });
+</script>
+{% endblock %}
